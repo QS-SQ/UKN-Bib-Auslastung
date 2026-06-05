@@ -55,8 +55,13 @@ def read_email():
     """
     # Connect to the email server and log in
     try:
-        mail = imaplib.IMAP4(os.getenv("SERVER"), os.getenv("PORT"))
-        mail.starttls()
+        server = os.getenv("SERVER")
+        port = int(os.getenv("PORT", "993"))
+        if port == 993:
+            mail = imaplib.IMAP4_SSL(server, port)
+        else:
+            mail = imaplib.IMAP4(server, port)
+            mail.starttls()
         mail.login(os.getenv("USER"), os.getenv("PASSWORD"))
         mail.select("INBOX")
     except Exception as e:
