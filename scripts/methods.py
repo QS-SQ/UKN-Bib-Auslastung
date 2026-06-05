@@ -56,6 +56,9 @@ def read_email():
     # Connect to the email server and log in
     try:
         server = os.getenv("SERVER")
+        if os.getenv("PORT") is None:
+            flag = 'email username not found in environment'
+            return None, None, flag
         port = int(os.getenv("PORT"))
         if port == 993:
             mail = imaplib.IMAP4_SSL(server, port)
