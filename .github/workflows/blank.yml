@@ -6,7 +6,8 @@ name: UKN Bib Auslastung
 on:
   schedule:
    - cron: "20 8-23 * * *"
-     timezone: "Europe/Brussels" 
+     timezone: "Europe/Brussels"
+  workflow_dispatch: 
 
 jobs:
   run-script:
