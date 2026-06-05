@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SERVER: ${{ secrets.SERVER }}
-      PORT: ${{ secrets.PORT }}
+      PORT: "993"
       USER: ${{ secrets.USER }}
       PASSWORD: ${{ secrets.PASSWORD }}
       SENDER: ${{ secrets.SENDER }}

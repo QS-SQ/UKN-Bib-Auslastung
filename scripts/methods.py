@@ -56,7 +56,7 @@ def read_email():
     # Connect to the email server and log in
     try:
         server = os.getenv("SERVER")
-        port = int(os.getenv("PORT"))
+        #port = int(os.getenv("PORT"))
         port = 993
         if port == 993:
             mail = imaplib.IMAP4_SSL(server, port)
