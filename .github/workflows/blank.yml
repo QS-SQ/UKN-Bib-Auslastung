@@ -52,6 +52,19 @@ jobs:
       - name: Run script
         run: python scripts/main.py
 
+      - name: Verify generated image
+        run: |
+          echo "Listing docs directory"
+          ls -l docs || true
+          echo "Checking temp image"
+          if [ -f docs/temp_storage/current_capacity_utilization.jpg ]; then
+            echo "Image exists"
+            stat -c 'Modified: %y' docs/temp_storage/current_capacity_utilization.jpg || true
+            sha256sum docs/temp_storage/current_capacity_utilization.jpg || true
+          else
+            echo "Image not found in docs/temp_storage"
+          fi
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
