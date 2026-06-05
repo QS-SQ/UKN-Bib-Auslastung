@@ -173,7 +173,7 @@ def calc_occupancy(df_data):
         capacity_map = pd.read_csv(StringIO(capacity_str), sep=';')
     else:
         flag = 'No capacity data found in environment'
-        return flag, {}
+        return {}, flag
     capacity_map = dict(zip(capacity_map.iloc[:, 0].astype(str).str.strip(), capacity_map.iloc[:, 1].astype(float)))
     
     occup = {}

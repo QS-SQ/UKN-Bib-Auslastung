@@ -8,6 +8,8 @@ from methods import read_email, preprocess_data, map_router_to_location, calc_oc
 
 load_dotenv()
 flags = ['not read', 'not processed', 'not mapped', 'not calculated']
+df_data = None
+timestamp = None
 
 df_data, timestamp, flags[0] = read_email()
 
@@ -22,9 +24,10 @@ if flags[2] != 'No mapping found in environment':
     
 if flags[3] == 'ok':
     path = os.path.join(os.getcwd(), 'docs/temp_storage/current_capacity_utilization.jpg')
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     visualize_occupancy(occ, path, timestamp)
 
 # send error message if any of the flags is not 'ok'
 if any(flag != 'ok' for flag in flags):
-    error_message = 'Error in processing: ' + '; '.join([flag for flag in flags if flag != 'ok'])
+    error_message = 'Error in processing: ' + '; '.join([str(flag) for flag in flags if flag != 'ok'])
     print(error_message)
