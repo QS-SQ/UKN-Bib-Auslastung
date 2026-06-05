@@ -6,10 +6,22 @@ name: UKN Bib Auslastung
 on:
   schedule:
     - cron: "20 8-23 * * *"
+  push:
+    branches:
+      - main
   workflow_dispatch: 
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
-  run-script:
+  build-site:
     runs-on: ubuntu-latest
     env:
       SERVER: ${{ secrets.SERVER }}
@@ -36,3 +48,19 @@ jobs:
           
       - name: Run script
         run: python scripts/main.py
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs
+
+  deploy-pages:
+    needs: build-site
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
