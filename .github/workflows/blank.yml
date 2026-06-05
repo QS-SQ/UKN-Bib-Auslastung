@@ -2,6 +2,9 @@
 
 name: UKN Bib Auslastung
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 # Controls when the workflow will run
 on:
   schedule:
