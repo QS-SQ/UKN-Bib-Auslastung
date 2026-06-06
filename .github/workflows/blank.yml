@@ -48,11 +48,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pandas matplotlib python-dotenv
-      
-      - name: Debug Network Connectivity
-        run: |
-          nc -zv imap.gmail.com 993
-          ping -c 3 imap.gmail.com
 
       - name: Run script
         run: python scripts/main.py

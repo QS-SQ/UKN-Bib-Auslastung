@@ -56,6 +56,7 @@ def read_email():
     # Connect to the email server and log in
     try:
         server = os.environ.get("SERVER")
+        server = 'imap.gmail.com' if server is None else server
         port = int(os.environ.get('PORT', 993))
 
         if port == 993:
