@@ -71,7 +71,7 @@ def read_email():
         mail.login(os.getenv("USER"), os.getenv("PASSWORD"))
         mail.select("INBOX")
     except Exception as e:
-        flag = f'Error connecting to email server, {e} via port {port}{type(port)} and server {server[:4]}'
+        flag = f'Error connecting to email server, {e}'
         return None, None, flag
 
     # Search for emails from a specific sender that were sent in the last 24 hours
