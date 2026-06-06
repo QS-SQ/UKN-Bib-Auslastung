@@ -27,13 +27,13 @@ jobs:
   build-site:
     runs-on: ubuntu-latest
     env:
-      SERVER: ${{ secrets.SERVER }}
-      PORT: ${{ secrets.PORT }}
-      USER: ${{ secrets.USER }}
-      PASSWORD: ${{ secrets.PASSWORD }}
-      SENDER: ${{ secrets.SENDER }}
-      MAPPING: ${{ secrets.MAPPING }}
-      CAPACITY: ${{ secrets.CAPACITY }}
+      CAPACITY: "${{ secrets.CAPACITY }}"
+      MAPPING: "${{ secrets.MAPPING }}"
+      PASSWORD: "${{ secrets.PASSWORD }}"
+      PORT: "${{ secrets.PORT }}"
+      SENDER: "${{ secrets.SENDER }}"
+      SERVER: "${{ secrets.SERVER }}"
+      USER: "${{ secrets.USER }}"      
 
     steps:
       - name: Check out repository
