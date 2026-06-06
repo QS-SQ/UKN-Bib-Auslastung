@@ -5,16 +5,16 @@ name: UKN Bib Auslastung
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-# Controls when the workflow will run
+# Control when workflow will run (only on repository dispatch)
 on:
   repository_dispatch:
     types: [trigger-hourly-job]
   #schedule:
   #  - cron: "21 6-21 * * *"
-  push:
-    branches:
-      - main
-  workflow_dispatch: 
+  #push:
+  #  branches:
+  #    - main
+  #workflow_dispatch: 
 
 permissions:
   contents: read
@@ -26,11 +26,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Load data, create figure and upload to GitHub Pages
   create-figure:
-    
+    # environment for job
     environment: production
-
+    # runner for job
     runs-on: ubuntu-latest
+    # environment variables for job
     env:
       CAPACITY: "${{ secrets.CAPACITY }}"
       MAPPING: "${{ secrets.MAPPING }}"
@@ -75,6 +77,7 @@ jobs:
         with:
           path: ./docs
 
+  # Deploy to GitHub Pages
   deploy-pages:
     needs: create-figure
     runs-on: ubuntu-latest

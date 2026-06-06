@@ -1,14 +1,14 @@
 """
-Method File for the UKN-Bib-Auslastung project used in the action workflow
+Method File for the UKN-Bib-Auslastung project
 """
 
 # import necessary libraries
-import pandas as pd
+import os
+from io import BytesIO, StringIO
 import matplotlib.pyplot as plt
+import pandas as pd
 import imaplib
 import email
-from io import BytesIO, StringIO
-import os
 
 def extract_csv_attachment(mail, id):
     """
@@ -20,23 +20,26 @@ def extract_csv_attachment(mail, id):
     Returns:
         df_data (DataFrame): DataFrame containing the data from the CSV attachment.
         timestamp (str): Timestamp of the email.
-        flag (str): Status flag indicating success or failure of the attachment extraction process.
+        flag (str): Status flag indicating success of the attachment extraction process.
     """
     flag='ok'
+    # fetch the email message by ID and parse it into an email object
     _, msg_data = mail.fetch(id, "(RFC822)")
     raw_msg = msg_data[0][1]
     msg = email.message_from_bytes(raw_msg)
         
-    # extract timestamp from email header and csv attachment
+    # extract timestamp
     timestamp = pd.to_datetime(msg['Date']).tz_localize(None).replace(second=0) 
     df_data = None
     
+    # loop through the email parts to find the CSV attachment and read it into a DataFrame
     for part in msg.walk():
         filename = part.get_filename()
         if filename and filename.lower().endswith('.csv'):
             payload = part.get_payload(decode=True)
             df_data = pd.read_csv(BytesIO(payload), delimiter=',', skiprows=8, on_bad_lines='skip')
-            
+    
+    # check if a CSV attachment was found and set the flag accordingly       
     if df_data is None:
         flag = 'no csv attachment in email found'
               
@@ -45,22 +48,18 @@ def extract_csv_attachment(mail, id):
 
 def read_email():
     """
-    Reads the most recent email (last 24h) with a specific subject filter and extracts the CSV attachment 
-    as a DataFrame.
+    Reads the most recent email (last 24h) with a sender filter and extracts the 
+    CSV attachment as a DataFrame.
 
     Returns:
         df_data (DataFrame): DataFrame containing the data from the CSV attachment.
         timestamp (str): Timestamp of the email.
-        flag (str): Status flag indicating success or failure of the email reading process.
+        flag (str): Status flag indicating success of the email reading process.
     """
     # Connect to the email server and log in
     try:
         server = os.environ.get("SERVER")
         port = int(os.environ.get('PORT'))
-             
-        if os.getenv("USER") is None or os.getenv("PASSWORD") is None:
-            flag = 'Email credentials not found in environment variables'
-            return None, None, flag
 
         if port == 993:
             mail = imaplib.IMAP4_SSL(server, port)
@@ -69,16 +68,17 @@ def read_email():
             mail.starttls()
         mail.login(os.getenv("USER"), os.getenv("PASSWORD"))
         mail.select("INBOX")
+        
     except Exception as e:
         flag = f'Error connecting to email server, {e}'
         return None, None, flag
 
-    # Search for emails from a specific sender that were sent in the last 24 hours
+    # Search for emails from specific sender sent in the last 24 hours
     since_date = (pd.Timestamp.now() - pd.Timedelta(days=1)).strftime('%d-%b-%Y')
     _, data = mail.search(None, '(ALL FROM "{}" SINCE {})'.format(os.getenv("SENDER"), since_date))
     mail_ids = data[0].split()
 
-    # find most recent email and extract csv attachment
+    # extract csv attachment
     if mail_ids: 
         return extract_csv_attachment(mail, mail_ids[-1])
     
@@ -90,13 +90,15 @@ def read_email():
 def preprocess_data(df_data):
     """ 
     Preprocesses the extracted DataFrame by removing unnecessary columns 
-    and summing up the Average Number of Users and Peak Number of Users for each AP Name.
+    and summing up the Average Number of Users and Peak Number of Users 
+    for each AP Name.
     
     Args:
         df_data (DataFrame): DataFrame containing the data from the CSV attachment.
     Returns:
-        df_data (DataFrame): Preprocessed DataFrame with unnecessary columns removed and summed up user numbers.
-        flag (str): Status flag indicating success or failure of the preprocessing process.
+        df_data (DataFrame): Preprocessed DataFrame with unnecessary columns removed 
+            and summed up user numbers.
+        flag (str): Status flag indicating success of the preprocessing process.
     """
     flag = 'ok'
     
@@ -137,6 +139,7 @@ def map_router_to_location(df_data):
     """
     flag = 'ok'
     
+    # load mapping from environment variable and create a DataFrame
     mapping_str = os.getenv("MAPPING")
     if mapping_str:
         router_map = pd.read_csv(StringIO(mapping_str), sep=';')
@@ -147,16 +150,16 @@ def map_router_to_location(df_data):
     # map router names to locations using the csv file
     router_area_map = dict(zip(router_map.iloc[:, 1].astype(str).str.strip(), router_map.iloc[:, 2].astype(str).str.strip()))
     
-    # add new column to df_data with ROUTER_AREA_MAP from config.py
+    # add new column to df_data with its location
     df_data['AP Name'] = df_data['AP Name'].astype(str).str.strip()
     df_data['Location'] = df_data['AP Name'].map(router_area_map)
 
-    # check if there are any AP Names that could not be mapped to a location and print them out
+    # check if there are any AP Names that could not be mapped to a location
     unmapped_aps = df_data[df_data['Location'].isna()]['AP Name'].unique()
     if len(unmapped_aps) > 0:
         flag = 'the following AP Names could not be mapped to a location: ' + ', '.join(unmapped_aps)
             
-    # check if there are any AP Names in ROUTER_AREA_MAP that are not in the df_data and print them out
+    # check if there are any AP Names in MAPPING that are not in the df_data
     missing_aps = set(router_area_map.keys()) - set(df_data['AP Name'])
     if len(missing_aps) > 0:
         flag = flag + ' and the following AP Names from the mapping file are not in the data: ' + ', '.join(missing_aps) if flag != 'ok' else 'the following AP Names from the mapping file are not in the data: ' + ', '.join(missing_aps)
@@ -170,7 +173,8 @@ def calc_occupancy(df_data):
     and the capacity defined in the capacity map.
 
     Args:
-        df_data (DataFrame): DataFrame containing the data from the CSV attachment with mapped locations.
+        df_data (DataFrame): DataFrame containing the data from the CSV attachment 
+            with mapped locations.
         capacity_map (dict): Dictionary mapping locations to their capacities.
     Returns:
         occup (dict): Dictionary containing the occupancy for each location.
@@ -188,6 +192,7 @@ def calc_occupancy(df_data):
     
     occup = {}
     
+    # calculate occupancy for each location based on the average number of users
     for loc in capacity_map.keys():
         if loc in df_data['Location'].values:
             avg_users = df_data[df_data['Location'] == loc]['Average Number of Users'].sum()
