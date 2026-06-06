@@ -56,12 +56,10 @@ def read_email():
     # Connect to the email server and log in
     try:
         server = os.environ.get("SERVER")
-        port = int(os.environ.get('EMAIL_PORT', 993))
-        if not server or not port:
-            raise ValueError("Email server not specified in environment variables")
-        if not os.getenv("USER") or not os.getenv("PASSWORD"):
-            raise ValueError("Email credentials not specified in environment variables")
+        port = int(os.environ.get('PORT', 993))
+
         if port == 993:
+            print("trying to connect to email server with SSL...")
             mail = imaplib.IMAP4_SSL(server, port)
         else:
             mail = imaplib.IMAP4(server, port)
