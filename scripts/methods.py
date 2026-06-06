@@ -63,7 +63,6 @@ def read_email():
             return None, None, flag
 
         if port == 993:
-            print("trying to connect to email server with SSL...")
             mail = imaplib.IMAP4_SSL(server, port)
         else:
             mail = imaplib.IMAP4(server, port)

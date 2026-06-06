@@ -1,4 +1,6 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 port = os.getenv('PORT')
 print(f"PORT: {port}")
