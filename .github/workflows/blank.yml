@@ -7,8 +7,10 @@ env:
 
 # Controls when the workflow will run
 on:
-  schedule:
-    - cron: "20 6-21 * * *"
+  repository_dispatch:
+    types: [trigger-hourly-job]
+  #schedule:
+  #  - cron: "21 6-21 * * *"
   push:
     branches:
       - main
