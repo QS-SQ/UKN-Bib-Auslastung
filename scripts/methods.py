@@ -256,3 +256,12 @@ def visualize_occupancy(occupancy, path, time, show=False):
         plt.show()
     
     plt.close('all')
+    
+    # save occupancy values to a csv file in the same directory as the plot
+    occ_df = pd.DataFrame(list(occupancy.items()), columns=['Location', 'Occupancy'])
+    csv_path = os.path.join(os.path.dirname(path), 'occupancy_values.csv')
+    occ_df.to_csv(csv_path, index=False)
+    
+    # append timestamp to the csv file
+    with open(csv_path, 'a') as f:
+        f.write(f"timestamp,{time}\n")

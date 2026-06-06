@@ -11,9 +11,9 @@ on:
     types: [trigger-hourly-job]
   #schedule:
   #  - cron: "21 6-21 * * *"
-  push:
-    branches:
-      - main
+  #push:
+  #  branches:
+  #    - main
   #workflow_dispatch: 
 
 permissions:
