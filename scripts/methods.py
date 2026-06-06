@@ -60,7 +60,9 @@ def read_email():
         #port = int(os.environ.get('PORT', 993))
         port = 993
         
-        print(os.environ.get("Port"))
+        print(os.environ.get("PORT"))
+        print(os.environ.get("SERVER")[:4])
+        
         if os.environ.get("SERVER") is None:
             print("SERVER not found in environment variables")
         if os.environ.get("PORT") is None:
