@@ -56,14 +56,7 @@ def read_email():
     # Connect to the email server and log in
     try:
         server = os.environ.get("SERVER")
-        #server = 'imap.gmail.com'
-        port = int(os.environ.get('PORT', 993))
-        #port = 993
-                
-        if not server or not port:
-            print("Email server or port not found in environment variables.")
-            print(f"SERVER: {server}, PORT: {port}")
-            exit(1)
+        port = int(os.environ.get('PORT'))
              
         if os.getenv("USER") is None or os.getenv("PASSWORD") is None:
             flag = 'Email credentials not found in environment variables'
