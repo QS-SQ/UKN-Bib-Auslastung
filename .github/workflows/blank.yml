@@ -53,7 +53,7 @@ jobs:
           pip install pandas matplotlib python-dotenv
 
       - name: Run script
-        run: python scripts/test_secrets.py
+        run: python scripts/main.py
 
       - name: Verify generated image
         run: |
