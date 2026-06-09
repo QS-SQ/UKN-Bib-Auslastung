@@ -9,8 +9,6 @@ env:
 on:
   repository_dispatch:
     types: [trigger-hourly-job]
-  #schedule:
-  #  - cron: "21 6-21 * * *"
   #push:
   #  branches:
   #    - main
@@ -26,8 +24,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Load data, create figure and upload to GitHub Pages
-  create-figure:
+  # Load data, compute data and upload to GitHub Pages
+  compute-data:
     # environment for job
     environment: production
     # runner for job
@@ -54,23 +52,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pandas matplotlib python-dotenv
+          pip install pandas python-dotenv
 
       - name: Run script
         run: python scripts/main.py
-
-      - name: Verify generated image
-        run: |
-          echo "Listing docs directory"
-          ls -l docs || true
-          echo "Checking temp image"
-          if [ -f docs/temp_storage/current_capacity_utilization.jpg ]; then
-            echo "Image exists"
-            stat -c 'Modified: %y' docs/temp_storage/current_capacity_utilization.jpg || true
-            sha256sum docs/temp_storage/current_capacity_utilization.jpg || true
-          else
-            echo "Image not found in docs/temp_storage"
-          fi
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
@@ -79,7 +64,7 @@ jobs:
 
   # Deploy to GitHub Pages
   deploy-pages:
-    needs: create-figure
+    needs: compute-data
     runs-on: ubuntu-latest
     environment:
       name: github-pages

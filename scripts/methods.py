@@ -5,7 +5,6 @@ Method File for the UKN-Bib-Auslastung project
 # import necessary libraries
 import os
 from io import BytesIO, StringIO
-import matplotlib.pyplot as plt
 import pandas as pd
 import imaplib
 import email
@@ -212,56 +211,20 @@ def calc_occupancy(df_data):
     return occup, flag
 
 
-def visualize_occupancy(occupancy, path, time, show=False):
+def save_as_csv(occupancy, path, time):
     """ 
-    Plot occupancy as a bar chart and save it to the specified path. 
+    save occupancy values to a csv file 
     
     Args:
         occupancy (dict): Dictionary containing the occupancy for each location.
         path (str): Path to save the generated plot.
         time (str): Timestamp to include in the plot title.
-        show (bool): Flag indicating whether to display the plot after saving it.
     """
-    
-    # colored bars based on occupancy levels
-    colors = []
-    for value in occupancy.values():
-        if value > 80:
-            colors.append("#EF4444")
-        elif value > 60:
-            colors.append("#FB923C")
-        elif value > 40:
-            colors.append("#FACC15")
-        else:
-            colors.append("#19A54D")
-    
-    plt.figure(figsize=(10, 6))
-    # background reference bars at 100% for each category
-    keys = list(occupancy.keys())
-    values = list(occupancy.values())
-    plt.barh(keys, [100] * len(keys), color="#E5E7EB", alpha=0.3, height=0.62, edgecolor='k', zorder=0)
-    # draw actual values on top of the reference bars
-    plt.barh(keys, values, color=colors, alpha=0.7, height=0.62, zorder=2)
-    plt.xlim(0, 100)
-    plt.xticks([])
-    plt.yticks(keys, fontsize=12)
-    plt.tick_params(axis='y', length=0)
-    ax = plt.gca()
-    ax.text(1, 0, time, transform=ax.transAxes, ha='right', va='bottom', fontsize=8, color='#6B7280')
-    for spine in ax.spines.values():
-        spine.set_visible(False)
-    plt.tight_layout()
-    plt.savefig(path, dpi=300)
-    if show:
-        plt.show()
-    
-    plt.close('all')
     
     # save occupancy values to a csv file in the same directory as the plot
     occ_df = pd.DataFrame(list(occupancy.items()), columns=['Location', 'Occupancy'])
-    csv_path = os.path.join(os.path.dirname(path), 'occupancy_values.csv')
-    occ_df.to_csv(csv_path, index=False)
+    occ_df.to_csv(path, index=False)
     
     # append timestamp to the csv file
-    with open(csv_path, 'a') as f:
+    with open(path, 'a') as f:
         f.write(f"timestamp,{time}\n")

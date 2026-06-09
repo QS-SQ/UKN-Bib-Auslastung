@@ -5,7 +5,7 @@ Main File for the UKN-Bib-Auslastung project used in the action workflow
 # import necessary libraries
 import os
 from dotenv import load_dotenv
-from methods import read_email, preprocess_data, map_router_to_location, calc_occupancy, visualize_occupancy    
+from methods import read_email, preprocess_data, map_router_to_location, calc_occupancy, save_as_csv    
 
 # only for local execution
 load_dotenv()
@@ -26,9 +26,9 @@ if flags[2] != 'No mapping found in environment':
     occ, flags[3] = calc_occupancy(df_data)
     
 if flags[3] == 'ok':
-    path = os.path.join(os.getcwd(), 'docs/temp_storage/current_capacity_utilization.jpg')
+    path = os.path.join(os.getcwd(), 'docs/temp_storage/occupancy_values.csv')
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    visualize_occupancy(occ, path, timestamp)
+    save_as_csv(occ, path, timestamp)
 
 # return error message if any of the flags is not 'ok'
 if any(flag != 'ok' for flag in flags):
